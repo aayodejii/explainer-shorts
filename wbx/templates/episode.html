@@ -1,0 +1,54 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>{{TITLE}}</title><link rel="stylesheet" href="/_wbx/wb.css"></head><body>
+<!--
+  Timeline: every element is a pure function of time t (seconds), set with data attributes.
+    data-draw="start,dur"   stroke draws on        data-write="start,dur"  text writes left-to-right
+    data-fade="start,dur"   fades in               data-wipe="start,dur"   wipes in left-to-right
+    data-pop="start,dur"    pops in (scale)        data-out="start,dur"    fades out (combines with pop/fade)
+  Custom motion goes in window.extra(t). Word timings: transcript.txt next to this file.
+  Preview: wbx stills <this folder> 1 5 10 ...      Render: wbx render <this folder>
+-->
+<svg viewBox="0 0 {{W}} {{H}}" width="{{W}}" height="{{H}}">
+  <defs>
+    <filter id="wob"><feTurbulence id="turb" type="fractalNoise" baseFrequency="0.018" numOctaves="2" seed="1"/>
+      <feDisplacementMap in="SourceGraphic" scale="5"/></filter>
+    <pattern id="dots" width="40" height="40" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="2" style="fill:var(--dots)"/></pattern>
+  </defs>
+  <rect width="{{W}}" height="{{H}}" fill="url(#dots)"/>
+
+  <g filter="url(#wob)">
+  <!-- series name: shown on the hook only, fades out with it -->
+  <g data-out="{{HOOK_OUT}},0.3">
+    <text x="540" y="190" text-anchor="middle" class="hand tb" font-size="44" letter-spacing="6" data-fade="0,0.4">{{HEADER}}</text>
+    <path class="ink thin" d="M380 230 Q540 214 700 232" data-draw="0.1,0.5"/>
+  </g>
+
+  <!-- scenes sit lower so they're centred; hide things with opacity, not off-screen positions -->
+  <g transform="translate(0,140)">
+
+  <!-- ===== A. HOOK (0 – {{HOOK_OUT}}) ===== -->
+  <g data-out="{{HOOK_OUT}},0.3">
+    <text x="540" y="700" text-anchor="middle" font-size="110" data-write="0.3,0.8">{{TITLE}}</text>
+  </g>
+
+  <!-- ===== B… scenes go here ===== -->
+
+  <!-- ===== END CARD ({{END}} – end) ===== -->
+  <g>
+    <path class="ink blue" stroke-width="7" d="M210 420 L310 420 L310 560 L260 520 L210 560 Z" data-draw="{{END_A}},0.45"/>
+    <text x="360" y="535" font-size="120" data-write="{{END_B}},0.5">{{END_LINE1}}</text>
+    <path class="ink blue" stroke-width="7" d="M200 700 L330 640 L290 770 L265 718 Z M265 718 L330 640" data-draw="{{END_C}},0.45"/>
+    <text x="360" y="745" font-size="120" data-write="{{END_D}},0.5">{{END_LINE2}}</text>
+    <text x="540" y="900" text-anchor="middle" class="tm" font-size="62" data-write="{{END_E}},1.0">{{END_LINE3}}</text>
+  </g>
+  </g>
+  </g>
+</svg>
+<div id="cap"></div>
+<script>
+const NS='http://www.w3.org/2000/svg', mk=(tag,a,parent,txt)=>{const e=document.createElementNS(NS,tag);for(const k in a)e.setAttribute(k,a[k]);if(txt!=null)e.textContent=txt;parent.appendChild(e);return e};
+window.extra=function(t){
+};
+</script>
+<script src="/_wbx/wb.js"></script>
+</body></html>

@@ -1,0 +1,29 @@
+# Series settings for wbx. Anything left out uses the defaults in wbx/config.py.
+name: {{NAME}}
+header: {{HEADER}}          # small title on the hook scene only; "" for none
+
+canvas: {width: 1080, height: 1920, fps: 30}
+captions: false
+
+theme:
+  paper: "#FBFAF5"
+  ink: "#1F2430"
+  blue: "#2563EB"
+  red: "#E0412F"
+  green: "#16A34A"
+  orange: "#E8890C"
+  font_display: Caveat
+  font_body: Patrick Hand
+
+audio: {loudness: -14, end_pad: 1.5}   # end_pad = silence after the voice for the end card
+
+voice:
+  target_wpm: 228
+  notes: ""                 # e.g. which voice/settings you record with
+
+script:
+  target_words: 150
+  closing_line: ""          # spoken last line, e.g. a call to action
+  rules: []                 # extra writing rules for this series
+
+end_card: {line1: "Save this", line2: "& share it", line3: ""}

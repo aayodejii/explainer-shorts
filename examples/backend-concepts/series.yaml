@@ -1,0 +1,29 @@
+# The series wbx was built for: one backend engineering concept per ~45 s vertical video.
+name: Backend Concepts
+header: BACKEND CONCEPTS
+
+canvas: {width: 1080, height: 1920, fps: 30}
+captions: false
+
+audio: {loudness: -14, end_pad: 1.5}
+
+voice:
+  target_wpm: 228
+  notes: 'ElevenLabs "WikiBrad - Fast & Informative", speed 0.88'
+
+script:
+  target_words: 150
+  closing_line: "Save this, and share it with someone who's learning backend."
+  rules:
+    - No acronyms or acronym plurals (the voice reads "APIs" as "AP"); spell out or rephrase.
+    - No rhetorical question-then-answer lines ("Short bursts? That's fine."); write plain statements.
+    - The line before the closing line carries a concrete fact, not a slogan.
+    - Numbers are written out in words.
+
+end_card:
+  line1: Save this
+  line2: "& share it"
+  line3: with someone who's learning backend
+
+episode:
+  output: "backend-concepts-{num:02d}-{slug}.mp4"

@@ -1,0 +1,16 @@
+/* Static whiteboard styles. Colours and fonts come from CSS variables that
+   wbx generates from series.yaml (see wbx/config.py: theme_css). */
+html,body{margin:0;width:var(--w);height:var(--h);overflow:hidden;background:var(--paper)}
+svg{position:absolute;inset:0}
+.ink{fill:none;stroke:var(--ink);stroke-width:6;stroke-linecap:round;stroke-linejoin:round}
+.thin{stroke-width:4}
+.blue{stroke:var(--blue)} .red{stroke:var(--red)} .green{stroke:var(--green)} .orange{stroke:var(--orange)} .grey{stroke:var(--grey)}
+text{font-family:var(--font-display),cursive;font-weight:700;fill:var(--ink)}
+.hand{font-family:var(--font-body),cursive;font-weight:400}
+.tb{fill:var(--blue)} .tr{fill:var(--red)} .tg{fill:var(--green)} .to{fill:var(--orange)} .tm{fill:var(--muted)}
+[data-pop]{transform-box:fill-box;transform-origin:center}
+#cap{display:var(--captions);position:absolute;left:70px;right:70px;top:1470px;text-align:center;
+     font-family:var(--font-body),cursive;font-size:74px;line-height:1.25;color:var(--ink);text-transform:uppercase}
+#cap span{padding:0 6px;border-radius:10px}
+#cap .on{background:var(--highlight)}
+.halo{paint-order:stroke;stroke:var(--paper);stroke-width:12px;stroke-linejoin:round}
