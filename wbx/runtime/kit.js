@@ -14,13 +14,14 @@
 const NS='http://www.w3.org/2000/svg';
 const r2=n=>Math.round(n*100)/100;
 
-// icon outlines, drawn around (0,0) at size 100
+// icon outlines, drawn around (0,0) at size 100 (M/L/Q/C only: arc radii would be moved by place())
 const ICONS={
   bookmark:'M-50 -70 L50 -70 L50 70 L0 30 L-50 70 Z',
   plane:'M-65 0 L65 -60 L25 70 L0 18 Z M0 18 L65 -60',
   check:'M-45 0 L-12 35 L50 -40',
   cross:'M-40 -40 L40 40 M40 -40 L-40 40',
   phone:'M-34 -62 L34 -62 L34 62 L-34 62 Z M-10 46 L10 46',
+  eye:'M-60 0 Q0 -55 60 0 Q0 55 -60 0 Z M0 -16 L16 0 L0 16 L-16 0 Z',
 };
 const place=(d,x,y,s)=>d.replace(/(-?\d+\.?\d*) (-?\d+\.?\d*)/g,(m,a,b)=>`${r2(x+a*s)} ${r2(y+b*s)}`);
 
