@@ -12,6 +12,7 @@ import http.server
 import json
 import os
 import shutil
+import sys
 import threading
 from pathlib import Path
 
@@ -86,6 +87,7 @@ def open_page(html: Path, root: Path, cfg: dict, words: list | None = None):
         br = p.chromium.launch(executable_path=chrome_path(cfg), args=["--disable-dev-shm-usage"])
         pg = br.new_page(viewport={"width": cv["width"], "height": cv["height"]})
         pg.set_default_timeout(120000)
+        pg.on("pageerror", lambda e: print(f"page error: {e}", file=sys.stderr))
         pg.add_init_script(f"window.WORDS={json.dumps(words or [])}")
         rel = html.resolve().relative_to(root.resolve()).as_posix()
         pg.goto(f"{base}/{rel}")

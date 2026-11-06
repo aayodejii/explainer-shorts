@@ -53,7 +53,7 @@ text.label{font-weight:900;letter-spacing:4px}
     "js": {
         "kind": "clean", "paper": "#F5F3EE", "ink": "#1B1F2A", "muted": "#7A7F8C", "accent": "#2F6BFF",
         "blue": "#2F6BFF", "green": "#14974A", "red": "#D93A2B", "orange": "#E07A10",
-        "tints": {"green": "#E3F8EA", "red": "#FDE8E6", "orange": "#FFF0DD"},
+        "tints": {"green": "#E3F8EA", "red": "#FDE8E6", "orange": "#FFF0DD", "blue": "#E8EFFF"},
         "highlight": "#FFE27A", "endSmall": 48,
     },
 }

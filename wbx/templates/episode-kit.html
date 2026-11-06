@@ -9,7 +9,8 @@
     K.card(x, y, w, h, t, {tone:'blue', bar:true})      K.row(x, y, w, h, t, {zebra:true})
     K.mark(x, y, w, h, t, {tone:'green'})                K.highlight(x, y, w, h, t, {before: textEl})
     K.arrow([[x,y],...], t)    K.line(x1,y1,x2,y2,t)    K.strike(...)    K.underline(x1, x2, y, color, t)
-    K.icon('bookmark'|'plane'|'check'|'cross', x, y, t, {size:100, tone:'blue'})    K.magnifier(x, y, t)
+    K.icon('bookmark'|'plane'|'check'|'cross'|'phone', x, y, t, {size:100, tone:'blue'})    K.magnifier(x, y, t)
+    K.database(cx, y, w, h, t, {label:'users'})          K.chip(cx, cy, 'text', t, {tone:'green', cls:'data'})
     K.counter(x, y, size, from, to, t, dur, {anchor:'middle', cls:'title'})
   Custom motion: window.extra = t => {...}.   Preview: wbx stills <folder> 1 5 10   Render: wbx render <folder>
 -->

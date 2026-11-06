@@ -20,6 +20,7 @@ const ICONS={
   plane:'M-65 0 L65 -60 L25 70 L0 18 Z M0 18 L65 -60',
   check:'M-45 0 L-12 35 L50 -40',
   cross:'M-40 -40 L40 40 M40 -40 L-40 40',
+  phone:'M-34 -62 L34 -62 L34 62 L-34 62 Z M-10 46 L10 46',
 };
 const place=(d,x,y,s)=>d.replace(/(-?\d+\.?\d*) (-?\d+\.?\d*)/g,(m,a,b)=>`${r2(x+a*s)} ${r2(y+b*s)}`);
 
@@ -104,6 +105,28 @@ function kit(opts={}){
       const g=el('g',{'data-pop':`${r2(t)},0.35`});
       el('circle',{cx,cy,r:22,fill:'none',stroke:c,'stroke-width':7},g);
       el('path',{d:`M${cx+16} ${cy+16} L${cx+36} ${cy+36}`,stroke:c,'stroke-width':8,'stroke-linecap':'round'},g);return g},
+    /** Database cylinder: centre x, top y, width, height. */
+    database(cx,y,w,h,t,o={}){const ry=w*0.16, x0=cx-w/2, x1=cx+w/2, c=color(o.tone||'blue');
+      const body=`M${x0} ${y+ry} L${x0} ${y+h-ry} A${w/2} ${ry} 0 0 0 ${x1} ${y+h-ry} L${x1} ${y+ry}`;
+      const band=yy=>`M${x0} ${yy} A${w/2} ${ry} 0 0 0 ${x1} ${yy}`;
+      if(rough_){roughShape(rc.path(body,ro({stroke:c,fill:th.fills[o.tone||'blue'],fillStyle:'hachure'})),t,0.5);
+        drawAll(rc.ellipse(cx,y+ry,w,ry*2,ro({stroke:c})),t+0.2,0.4);
+        [0.42,0.7].forEach(f=>drawAll(rc.path(band(y+h*f),ro({stroke:c,strokeWidth:th.stroke-1})),t+0.45,0.35));return}
+      const g=el('g',{'data-pop':`${r2(t)},0.4`});
+      el('path',{d:body+' Z',fill:'#fff',stroke:c,'stroke-width':5,filter:'url(#sh)'},g);
+      [0.3,0.82].forEach(f=>el('path',{d:band(y+h*f),fill:'none',stroke:c,'stroke-width':4,opacity:0.45},g));
+      el('ellipse',{cx,cy:y+ry,rx:w/2,ry,fill:(th.tints||{}).blue||'#E8EFFF',stroke:c,'stroke-width':5},g);
+      if(o.label)el('text',{x:cx,y:y+h*0.62,'font-size':o.size||44,'text-anchor':'middle',class:'label',style:`fill:${c}`},g,o.label);
+      return g},
+    /** Pill label centred at (cx, cy). Width is estimated from the text unless o.w is given. */
+    chip(cx,cy,txt,t,o={}){const size=o.size||40, w=o.w||Math.round(txt.length*size*(o.cls==='data'?0.62:0.56)+size*1.4), h=size*1.7;
+      const c=o.tone?color(o.tone):th.ink;
+      if(rough_){roughShape(rc.rectangle(cx-w/2,cy-h/2,w,h,ro({stroke:c})),t,0.35);
+        return K.text(cx,cy+size*0.35,size,txt,t+0.2,{anchor:'middle',cls:o.cls,color:o.tone})}
+      const g=el('g',{'data-pop':`${r2(t)},0.35`});
+      el('rect',{x:cx-w/2,y:cy-h/2,width:w,height:h,rx:h/2,fill:o.fill||(th.tints||{})[o.tone]||'#fff',filter:'url(#sh)'},g);
+      el('text',{x:cx,y:cy+size*0.35,'font-size':size,'text-anchor':'middle',class:o.cls,style:`fill:${c}`},g,txt);
+      return g},
     /** Number counting from→to over dur seconds. */
     counter(x,y,size,from,to,t,dur,o={}){
       const e=el('text',{x,y,'font-size':size,'text-anchor':o.anchor,class:o.cls,style:o.color?`fill:${color(o.color)}`:null,
