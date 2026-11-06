@@ -1,0 +1,32 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>{{TITLE}}</title>
+<link rel="stylesheet" href="/_wbx/wb.css"><script src="/_wbx/kit.js"></script></head><body>
+<!--
+  Kit episode: describe WHAT appears and WHEN; the series style (series.yaml `style:`) decides the look.
+  Blocks (t = start time in seconds, from transcript.txt):
+    K.scene(start, end)                 following elements fade out at `end`
+    K.text(x, y, size, 'txt', t, {anchor:'middle', cls:'title'|'label'|'data'|'body', color:'blue'})
+    K.card(x, y, w, h, t, {tone:'blue', bar:true})      K.row(x, y, w, h, t, {zebra:true})
+    K.mark(x, y, w, h, t, {tone:'green'})                K.highlight(x, y, w, h, t, {before: textEl})
+    K.arrow([[x,y],...], t)    K.line(x1,y1,x2,y2,t)    K.strike(...)    K.underline(x1, x2, y, color, t)
+    K.icon('bookmark'|'plane'|'check'|'cross', x, y, t, {size:100, tone:'blue'})    K.magnifier(x, y, t)
+    K.counter(x, y, size, from, to, t, dur, {anchor:'middle', cls:'title'})
+  Custom motion: window.extra = t => {...}.   Preview: wbx stills <folder> 1 5 10   Render: wbx render <folder>
+-->
+<svg id="s" viewBox="0 0 {{W}} {{H}}" width="{{W}}" height="{{H}}"><g id="root"></g></svg>
+<div id="cap"></div>
+<script>
+const K = wbx.kit();
+K.header('{{HEADER}}', {{HOOK_OUT}});
+
+// ===== A. HOOK (0 – {{HOOK_OUT}}) =====
+K.scene(0, {{HOOK_OUT}});
+K.text(540, 840, 110, '{{TITLE_JS}}', 0.3, {anchor: 'middle', cls: 'title'});
+
+// ===== B… scenes go here =====
+
+// ===== END CARD ({{END}} – end) =====
+K.endCard({{END}}, ['{{END_LINE1_JS}}', '{{END_LINE2_JS}}', '{{END_LINE3_JS}}']);
+</script>
+<script src="/_wbx/wb.js"></script>
+</body></html>

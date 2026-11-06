@@ -30,6 +30,12 @@ window.render=function(t){
   for(const el of els('out')){const[s,d]=arg(el,'out');
     const base=el.hasAttribute('data-pop')||el.hasAttribute('data-fade')?parseFloat(el.style.opacity):1;
     el.style.opacity=base*(1-clamp((t-s)/d));}
+  // slide in: data-move="start,dur,dx,dy" starts offset by (dx,dy) and eases to its place
+  for(const el of els('move')){const[s,d,dx,dy]=arg(el,'move');const p=1-ease(clamp((t-s)/d));
+    el.setAttribute('transform',`translate(${dx*p} ${dy*p})`);}
+  // count up: data-count="start,dur,from,to"
+  for(const el of els('count')){const[s,d,a,b]=arg(el,'count');
+    el.textContent=Math.round(a+(b-a)*ease(clamp((t-s)/d))).toLocaleString('en-GB');}
   if(window.extra)window.extra(t);
   // hand-drawn "boil": new noise seed ~8 times a second
   const turb=document.getElementById('turb'); if(turb)turb.setAttribute('seed',1+Math.floor(t*8)%4);

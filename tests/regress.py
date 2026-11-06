@@ -1,5 +1,6 @@
 """Visual regression: render stills of every episode in a series and compare them
-with a saved baseline, byte for byte (rendering is deterministic for a given t).
+with a saved baseline. Chrome's anti-aliasing varies by a few pixels between runs,
+so a frame passes if fewer than MAX_PIXELS pixels differ by more than THRESHOLD.
 
   python tests/regress.py <series-folder> --baseline <dir> --update   # save baseline
   python tests/regress.py <series-folder> --baseline <dir>            # compare after a change
@@ -7,7 +8,9 @@ with a saved baseline, byte for byte (rendering is deterministic for a given t).
 The baseline lives outside this repo, next to your content, since it shows your episodes.
 """
 import argparse
-import hashlib
+import subprocess
+
+import numpy as np
 import sys
 import tempfile
 from pathlib import Path
@@ -16,6 +19,18 @@ from wbx import cli
 from wbx.render import stills
 
 TIMES = [1, 8, 16, 24, 32, 41.5]
+THRESHOLD, MAX_PIXELS = 40, 200
+
+
+def pixels(png):
+    raw = subprocess.run(["ffmpeg", "-v", "error", "-i", str(png), "-f", "rawvideo", "-pix_fmt", "gray", "-"],
+                         capture_output=True, check=True).stdout
+    return np.frombuffer(raw, np.uint8).astype(int)
+
+
+def changed(a, b):
+    pa, pb = pixels(a), pixels(b)
+    return pa.size if pa.size != pb.size else int((np.abs(pa - pb) > THRESHOLD).sum())
 
 ap = argparse.ArgumentParser()
 ap.add_argument("series")
@@ -34,12 +49,13 @@ with tempfile.TemporaryDirectory() as tmp:
             if a.update:
                 continue
             ref = base / d.name / p.name
-            same = ref.exists() and hashlib.sha1(ref.read_bytes()).digest() == hashlib.sha1(p.read_bytes()).digest()
+            n = changed(ref, p) if ref.exists() else -1
+            same = 0 <= n < MAX_PIXELS
             if not same:
                 failed += 1
                 keep = Path(a.baseline + "_diff") / d.name
                 keep.mkdir(parents=True, exist_ok=True)
                 (keep / p.name).write_bytes(p.read_bytes())
-            print(f"{'ok  ' if same else 'DIFF'} {d.name} t={p.stem}")
+            print(f"{'ok  ' if same else 'DIFF'} {d.name} t={p.stem}  ({n} px changed)")
 print("baseline saved" if a.update else f"{failed} differing frame(s)")
 sys.exit(1 if failed else 0)

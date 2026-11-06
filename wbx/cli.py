@@ -33,6 +33,9 @@ class Episode:
         if not self.dir.is_dir():
             raise SystemExit(f"not a folder: {self.dir}")
         self.cfg, self.root = config.load(self.dir)
+        if (self.dir / "episode.yaml").exists():   # per-episode overrides, e.g. `style: chalk`
+            import yaml
+            self.cfg = config._merge(self.cfg, yaml.safe_load((self.dir / "episode.yaml").read_text()) or {})
         m = re.match(r"(\d+)-(.+)", self.dir.name)
         self.num, self.slug = (int(m[1]), m[2]) if m else (0, self.dir.name)
 
@@ -127,7 +130,11 @@ def scaffold_html(ep: Episode, tr: list) -> Path:
     hits = [w for w in ws if first and w["w"].strip().lower().startswith(first)]
     T = round(hits[-1]["s"] - 0.05, 2) if hits else round(ws[-1]["e"], 2)
     hook = next((round(w["e"] + 0.3, 1) for w in ws if w["w"].strip()[-1:] in ".?!"), 5.0)
-    html = fill((TEMPLATES / "episode.html").read_text(), {
+    js = lambda v: str(v).replace("\\", "\\\\").replace("'", "\\'")
+    kit = config.style_theme(cfg) is not None
+    html = fill((TEMPLATES / ("episode-kit.html" if kit else "episode.html")).read_text(), {
+        "TITLE_JS": js(ep.title()), "END_LINE1_JS": js(ec["line1"]), "END_LINE2_JS": js(ec["line2"]),
+        "END_LINE3_JS": js(ec["line3"]),
         "TITLE": ep.title(), "HEADER": cfg["header"], "W": cv["width"], "H": cv["height"],
         "HOOK_OUT": hook, "END": T, "END_A": round(T + 0.05, 2), "END_B": round(T + 0.1, 2),
         "END_C": round(T + 0.65, 2), "END_D": round(T + 0.7, 2), "END_E": round(T + 1.1, 2),

@@ -15,6 +15,22 @@ Built for the *Backend Concepts* short-video series; configurable for any series
 - `faster-whisper` gives word timings, so scenes land on the exact spoken word.
 - Headless Chrome (Playwright) screenshots every frame; ffmpeg encodes H.264 + AAC, loudness-normalised.
 
+## Styles
+
+Set `style:` in `series.yaml` (or in an episode's own `episode.yaml` to override one episode):
+
+| style | look | how things enter |
+|---|---|---|
+| `whiteboard` (default) | original: Caveat + Patrick Hand, dotted paper, wobble | episode draws its own SVG |
+| `clean` | Nunito + JetBrains Mono, rounded cards, soft shadows, grid paper | cards pop, rows slide, text fades up |
+| `sketch` | rough.js strokes, hatch fills, Kalam + Gochi Hand, paper grain | outlines draw on, fills scribble in, text writes on |
+| `chalk` | dark board, chalk texture, Gaegu + Cabin Sketch | same as sketch |
+
+The last three use the **kit** (`wbx/runtime/kit.js`): an episode says *what* appears and *when*
+(`K.card(...)`, `K.text(...)`, `K.arrow(...)`), and the theme decides the look and the entrance, so the same
+episode code renders in any of them. `style_options:` overrides a theme's colours or stroke settings.
+Themes live in `wbx/themes.py`. rough.js (MIT) is vendored in `wbx/runtime/vendor/`.
+
 ## Install
 
 Needs Python 3.10+, ffmpeg, and Chrome or Chromium.

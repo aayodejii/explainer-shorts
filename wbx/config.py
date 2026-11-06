@@ -22,6 +22,8 @@ DEFAULTS: dict = {
         "font_display": "Caveat", "font_display_weights": "600;700",
         "font_body": "Patrick Hand",
     },
+    "style": "whiteboard",              # whiteboard (original) | clean | sketch | chalk
+    "style_options": {},                # overrides for the style's kit values (colours, stroke...)
     "captions": False,                  # burned-in word captions
     "audio": {"loudness": -14, "true_peak": -1.5, "end_pad": 1.5},
     "voice": {"target_wpm": 228, "notes": ""},
@@ -69,8 +71,37 @@ def slugify(s: str) -> str:
     return "-".join("".join(c.lower() if c.isalnum() else " " for c in s).split())
 
 
+def style_theme(cfg: dict) -> dict | None:
+    """The kit theme for the series' style, or None for the original whiteboard style."""
+    from .themes import THEMES
+    if cfg["style"] == "whiteboard":
+        return None
+    if cfg["style"] not in THEMES:
+        raise SystemExit(f"unknown style {cfg['style']!r}; choose whiteboard, {', '.join(THEMES)}")
+    return THEMES[cfg["style"]]
+
+
+def kit_js_theme(cfg: dict) -> dict:
+    st = style_theme(cfg) or THEMES_FALLBACK
+    return {**st["js"], "background": st["background"], **(cfg.get("style_options") or {})}
+
+
+THEMES_FALLBACK = {"js": {}, "background": ""}
+
+
 def theme_css(cfg: dict) -> str:
-    """CSS variables + font import for the runtime stylesheet."""
+    """CSS variables + font import for the runtime stylesheet (appended rules come after wb.css)."""
+    st = style_theme(cfg)
+    if st:
+        cv, js = cfg["canvas"], {**st["js"], **(cfg.get("style_options") or {})}
+        fams = "&".join(f"family={f}" for f in st["fonts"])
+        first = st["fonts"][0].split(":")[0].replace("+", " ")
+        vars_ = {"w": f"{cv['width']}px", "h": f"{cv['height']}px", "font-display": f"'{first}'", "font-body": f"'{first}'",
+                 "captions": "block" if cfg["captions"] else "none", "dots": "transparent",
+                 **{k: js[k] for k in ("paper", "ink", "muted", "blue", "red", "green", "orange") if k in js},
+                 "grey": js.get("muted"), "highlight": js.get("highlight")}
+        body = ";".join(f"--{k}:{v}" for k, v in vars_.items() if v)
+        return f"@import url('https://fonts.googleapis.com/css2?{fams}&display=block');\n:root{{{body}}}\n"
     th, cv = cfg["theme"], cfg["canvas"]
     fam = f"family={quote_plus(th['font_display'])}:wght@{th['font_display_weights']}"
     fam += f"&family={quote_plus(th['font_body'])}"
