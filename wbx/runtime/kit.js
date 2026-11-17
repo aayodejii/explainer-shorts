@@ -45,9 +45,11 @@ function kit(opts={}){
     kids.forEach(k=>{k.setAttribute('data-draw',`${r2(t+d*0.6)},${d*1.6}`);if(th.fillOpacity!=null)k.setAttribute('opacity',th.fillOpacity)});
     cur.appendChild(n);return n};
   const color=tone=>tone?(th[tone]||tone):th.ink;
+  // corner rounding: theme/series `round` scales every corner radius (1 = as designed, 0 = square corners + square line ends)
+  const RND=th.round??1, R=n=>n*RND, CAP=RND?'round':'square', JOIN=RND?'round':'miter';
 
   const K={
-    theme:th, el,
+    theme:th, el, rx:R, cap:CAP,
     /** Start a scene: following elements go in a group that fades out at `end` (omit end to keep it). */
     scene(start,end,o={}){cur=el('g',end!=null?{'data-out':`${r2(end)},${o.fade||0.3}`}:{},top);return cur},
     /** Small series title on the hook only. */
@@ -63,22 +65,22 @@ function kit(opts={}){
       if(rough_)return roughShape(rc.rectangle(x,y,w,h,ro({stroke:o.tone&&o.tone!=='yellow'?color(o.tone):th.ink,
         fill:o.tone?th.fills[o.tone]:undefined,fillStyle:o.hatch||'hachure'})),t);
       const g=el('g',{'data-pop':`${r2(t)},0.4`});
-      el('rect',{x,y,width:w,height:h,rx:o.rx??28,fill:(th.tints||{})[o.tone]||'#fff',filter:'url(#sh)'},g);
-      if(o.bar)el('rect',{x,y,width:12,height:h,rx:6,fill:color(o.tone)},g);
+      el('rect',{x,y,width:w,height:h,rx:R(o.rx??28),fill:(th.tints||{})[o.tone]||'#fff',filter:'url(#sh)'},g);
+      if(o.bar)el('rect',{x,y,width:12,height:h,rx:R(6),fill:color(o.tone)},g);
       return g},
     /** Table/list row. */
     row(x,y,w,h,t,o={}){
       if(rough_)return roughShape(rc.rectangle(x,y,w,h,ro()),t,0.35);
       const g=el('g',{'data-fade':`${r2(t)},0.3`,'data-move':`${r2(t)},0.4,60,0`});
-      el('rect',{x,y,width:w,height:h,rx:18,fill:o.zebra?'#F5F6F9':'#fff'},g);return g},
+      el('rect',{x,y,width:w,height:h,rx:R(18),fill:o.zebra?'#F5F6F9':'#fff'},g);return g},
     /** Emphasise a row/box as "the one" (green by default). */
     mark(x,y,w,h,t,o={}){const tone=o.tone||'green';
       if(rough_)return roughShape(rc.rectangle(x,y,w,h,ro({stroke:color(tone),fill:th.fills[tone],fillStyle:'cross-hatch',strokeWidth:th.stroke+1})),t,0.35);
-      return el('rect',{x,y,width:w,height:h,rx:18,fill:(th.tints||{})[tone]||'#fff',stroke:color(tone),'stroke-width':5,'data-wipe':`${r2(t)},0.35`})},
+      return el('rect',{x,y,width:w,height:h,rx:R(18),fill:(th.tints||{})[tone]||'#fff',stroke:color(tone),'stroke-width':5,'data-wipe':`${r2(t)},0.35`})},
     /** Highlighter behind text; pass {before: textElement} so it sits underneath. */
     highlight(x,y,w,h,t,o={}){
       const n=rough_?rc.rectangle(x,y,w,h,ro({stroke:'none',fill:o.color||th.highlight,fillStyle:'solid',roughness:2.2}))
-                    :el('rect',{x,y,width:w,height:h,rx:16,fill:o.color||th.highlight});
+                    :el('rect',{x,y,width:w,height:h,rx:R(16),fill:o.color||th.highlight});
       n.setAttribute('data-wipe',`${r2(t)},0.4`);cur.insertBefore(n,o.before||null);return n},
     /** Arrow along points [[x,y],...] (rough: curve through them; clean: cubic from 4 points). */
     arrow(pts,t,o={}){const c=color(o.tone||'accent'), d=o.dur||0.6;
@@ -86,26 +88,26 @@ function kit(opts={}){
       if(rough_){const n=drawAll(rc.curve(pts,ro({stroke:c,strokeWidth:th.stroke+1})),t,d);
         [0.5,-0.5].forEach(s=>drawAll(rc.line(x2,y2,x2-34*Math.cos(a+s),y2-34*Math.sin(a+s),ro({stroke:c,strokeWidth:th.stroke+1})),t+d,0.15));return n}
       const dd=pts.length===4?`M${pts[0]} C ${pts[1]}, ${pts[2]}, ${pts[3]}`:'M'+pts.map(p=>p.join(' ')).join(' L');
-      const p=el('path',{d:dd,fill:'none',stroke:c,'stroke-width':9,'stroke-linecap':'round','stroke-linejoin':'round','data-draw':`${r2(t)},${d}`});
+      const p=el('path',{d:dd,fill:'none',stroke:c,'stroke-width':9,'stroke-linecap':CAP,'stroke-linejoin':JOIN,'data-draw':`${r2(t)},${d}`});
       const L=26;el('path',{d:`M${x2+8*Math.cos(a)} ${y2+8*Math.sin(a)} L${x2-L*Math.cos(a+0.5)} ${y2-L*Math.sin(a+0.5)} L${x2-L*Math.cos(a-0.5)} ${y2-L*Math.sin(a-0.5)}Z`,
         fill:c,'data-pop':`${r2(t+d-0.05)},0.25`});return p},
     line(x1,y1,x2,y2,t,o={}){const c=color(o.tone);
       if(rough_)return drawAll(rc.line(x1,y1,x2,y2,ro({stroke:c,strokeWidth:o.width||th.stroke})),t,o.dur||0.35);
-      return el('path',{d:`M${x1} ${y1} L${x2} ${y2}`,stroke:c,'stroke-width':o.width||8,'stroke-linecap':'round','data-draw':`${r2(t)},${o.dur||0.35}`})},
+      return el('path',{d:`M${x1} ${y1} L${x2} ${y2}`,stroke:c,'stroke-width':o.width||8,'stroke-linecap':CAP,'data-draw':`${r2(t)},${o.dur||0.35}`})},
     strike(x1,y1,x2,y2,t,o={}){return K.line(x1,y1,x2,y2,t,{tone:o.tone||'red'})},
     underline(x1,x2,y,c,t){
       if(rough_)return drawAll(rc.curve([[x1,y+4],[(x1+x2)/2,y-8],[x2,y+6]],ro({stroke:c||th.accent,strokeWidth:th.stroke+2})),t,0.5);
-      return el('rect',{x:x1,y:y-4,width:x2-x1,height:10,rx:5,fill:c||th.accent,'data-wipe':`${r2(t)},0.5`})},
+      return el('rect',{x:x1,y:y-4,width:x2-x1,height:10,rx:R(5),fill:c||th.accent,'data-wipe':`${r2(t)},0.5`})},
     /** Line icon from the ICONS set, drawn on. size 100 = the reference size. */
     icon(name,x,y,t,o={}){const d=place(ICONS[name],x,y,(o.size||100)/100), c=color(o.tone||'blue');
       if(rough_)return drawAll(rc.path(d,ro({stroke:c,strokeWidth:th.stroke+2})),t,o.dur||0.45);
-      return el('path',{d,fill:'none',stroke:c,'stroke-width':9,'stroke-linecap':'round','stroke-linejoin':'round','data-draw':`${r2(t)},${o.dur||0.45}`})},
+      return el('path',{d,fill:'none',stroke:c,'stroke-width':9,'stroke-linecap':CAP,'stroke-linejoin':JOIN,'data-draw':`${r2(t)},${o.dur||0.45}`})},
     magnifier(cx,cy,t,o={}){const c=color(o.tone||'blue');
       if(rough_){drawAll(rc.circle(cx,cy,50,ro({stroke:c})),t,0.3);
         return drawAll(rc.line(cx+18,cy+18,cx+43,cy+43,ro({stroke:c,strokeWidth:th.stroke+2})),t+0.25,0.3)}
       const g=el('g',{'data-pop':`${r2(t)},0.35`});
       el('circle',{cx,cy,r:22,fill:'none',stroke:c,'stroke-width':7},g);
-      el('path',{d:`M${cx+16} ${cy+16} L${cx+36} ${cy+36}`,stroke:c,'stroke-width':8,'stroke-linecap':'round'},g);return g},
+      el('path',{d:`M${cx+16} ${cy+16} L${cx+36} ${cy+36}`,stroke:c,'stroke-width':8,'stroke-linecap':CAP},g);return g},
     /** Database cylinder: centre x, top y, width, height. */
     database(cx,y,w,h,t,o={}){const ry=w*0.16, x0=cx-w/2, x1=cx+w/2, c=color(o.tone||'blue');
       const body=`M${x0} ${y+ry} L${x0} ${y+h-ry} A${w/2} ${ry} 0 0 0 ${x1} ${y+h-ry} L${x1} ${y+ry}`;
@@ -125,7 +127,7 @@ function kit(opts={}){
       if(rough_){roughShape(rc.rectangle(cx-w/2,cy-h/2,w,h,ro({stroke:c})),t,0.35);
         return K.text(cx,cy+size*0.35,size,txt,t+0.2,{anchor:'middle',cls:o.cls,color:o.tone})}
       const g=el('g',{'data-pop':`${r2(t)},0.35`});
-      el('rect',{x:cx-w/2,y:cy-h/2,width:w,height:h,rx:h/2,fill:o.fill||(th.tints||{})[o.tone]||'#fff',filter:'url(#sh)'},g);
+      el('rect',{x:cx-w/2,y:cy-h/2,width:w,height:h,rx:R(h/2),fill:o.fill||(th.tints||{})[o.tone]||'#fff',filter:'url(#sh)'},g);
       el('text',{x:cx,y:cy+size*0.35,'font-size':size,'text-anchor':'middle',class:o.cls,style:`fill:${c}`},g,txt);
       return g},
     /** Number counting from→to over dur seconds. */

@@ -25,6 +25,8 @@ DEFAULTS: dict = {
     "style": "whiteboard",              # whiteboard (original) | clean | sketch | chalk
     "style_options": {},                # overrides for the style's kit values (colours, stroke...)
     "captions": False,                  # burned-in word captions
+    "caption_top": 1470,
+    "fonts": None,                      # kit styles only: {title: "League Spartan", body: "Poppins", data: ...} overrides the style's fonts                # y of the caption block (TikTok covers roughly the bottom 400 px)
     "audio": {"loudness": -14, "true_peak": -1.5, "end_pad": 1.5},
     "voice": {"target_wpm": 228, "notes": ""},
     "script": {
@@ -89,6 +91,29 @@ def kit_js_theme(cfg: dict) -> dict:
 THEMES_FALLBACK = {"js": {}, "background": ""}
 
 
+def font_override(cfg: dict) -> dict | None:
+    """`fonts:` from the config, filled out (title/body/data), or None. Kit styles only."""
+    f = cfg.get("fonts")
+    if not f or not style_theme(cfg):
+        return None
+    title = f.get("title") or f.get("body")
+    body = f.get("body") or title
+    data = f.get("data") or body
+    return {"title": title, "body": body, "data": data, "families": list(dict.fromkeys([title, body, data]))}
+
+
+def font_rules(cfg: dict) -> str:
+    """CSS appended after the style's own rules, so `fonts:` wins."""
+    fo = font_override(cfg)
+    if not fo:
+        return ""
+    return (f"text{{font-family:'{fo['body']}',sans-serif;font-weight:600}}\n"
+            f"text.title,text.label{{font-family:'{fo['title']}',sans-serif;font-weight:800;letter-spacing:0}}\n"
+            f"text.label{{letter-spacing:3px}}\n"
+            f"text.data{{font-family:'{fo['data']}',sans-serif;font-weight:500}}\n"
+            f"#cap{{font-family:'{fo['title']}',sans-serif;font-weight:800}}\n")
+
+
 def theme_css(cfg: dict) -> str:
     """CSS variables + font import for the runtime stylesheet (appended rules come after wb.css)."""
     st = style_theme(cfg)
@@ -98,8 +123,14 @@ def theme_css(cfg: dict) -> str:
         first = st["fonts"][0].split(":")[0].replace("+", " ")
         vars_ = {"w": f"{cv['width']}px", "h": f"{cv['height']}px", "font-display": f"'{first}'", "font-body": f"'{first}'",
                  "captions": "block" if cfg["captions"] else "none", "dots": "transparent",
+                 "cap-top": f"{cfg.get('caption_top', 1470)}px",
+                 "cap-radius": f"{10 * js.get('round', 1)}px",
                  **{k: js[k] for k in ("paper", "ink", "muted", "blue", "red", "green", "orange") if k in js},
                  "grey": js.get("muted"), "highlight": js.get("highlight")}
+        fo = font_override(cfg)
+        if fo:
+            fams += "&" + "&".join(f"family={quote_plus(f)}:wght@400;500;600;700;800;900" for f in fo["families"])
+            vars_["font-display"] = vars_["font-body"] = f"'{fo['title']}'"
         body = ";".join(f"--{k}:{v}" for k, v in vars_.items() if v)
         return f"@import url('https://fonts.googleapis.com/css2?{fams}&display=block');\n:root{{{body}}}\n"
     th, cv = cfg["theme"], cfg["canvas"]
@@ -108,7 +139,7 @@ def theme_css(cfg: dict) -> str:
     vars_ = {
         "w": f"{cv['width']}px", "h": f"{cv['height']}px",
         "font-display": f"'{th['font_display']}'", "font-body": f"'{th['font_body']}'",
-        "captions": "block" if cfg["captions"] else "none",
+        "captions": "block" if cfg["captions"] else "none", "cap-top": f"{cfg.get('caption_top', 1470)}px",
         **{k: th[k] for k in ("paper", "ink", "muted", "dots", "blue", "red", "green", "orange", "grey", "highlight")},
     }
     body = ";".join(f"--{k}:{v}" for k, v in vars_.items())

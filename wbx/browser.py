@@ -16,7 +16,7 @@ import sys
 import threading
 from pathlib import Path
 
-from .config import kit_js_theme, style_theme, theme_css
+from .config import font_rules, kit_js_theme, style_theme, theme_css
 
 RUNTIME = Path(__file__).parent / "runtime"
 
@@ -33,13 +33,15 @@ class _Handler(http.server.SimpleHTTPRequestHandler):
             name = path[len("/_wbx/"):]
             if name == "wb.css":
                 st = style_theme(self.cfg)
-                body = (theme_css(self.cfg) + (RUNTIME / "wb.css").read_text() + (st["css"] if st else "")).encode()
+                body = (theme_css(self.cfg) + (RUNTIME / "wb.css").read_text() + (st["css"] if st else "") + font_rules(self.cfg)).encode()
                 ctype = "text/css"
             elif name == "kit.js":
                 body = ((RUNTIME / "vendor" / "rough.js").read_text() + "\n"
                         + f"window.WBX_THEME={json.dumps(kit_js_theme(self.cfg))};\n"
                         + (RUNTIME / "kit.js").read_text()).encode()
                 ctype = "application/javascript"
+            elif name == "collage.js":
+                body, ctype = (RUNTIME / "collage.js").read_bytes(), "application/javascript"
             elif name == "wb.js":
                 body, ctype = (RUNTIME / "wb.js").read_bytes(), "application/javascript"
             else:

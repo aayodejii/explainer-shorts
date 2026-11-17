@@ -25,11 +25,16 @@ Set `style:` in `series.yaml` (or in an episode's own `episode.yaml` to override
 | `clean` | Nunito + JetBrains Mono, rounded cards, soft shadows, grid paper | cards pop, rows slide, text fades up |
 | `sketch` | rough.js strokes, hatch fills, Kalam + Gochi Hand, paper grain | outlines draw on, fills scribble in, text writes on |
 | `chalk` | dark board, chalk texture, Gaegu + Cabin Sketch | same as sketch |
+| `collage` | documentary paper collage: torn cut-outs, tape, stamps, red string, highlighter, handwritten notes, grain, moving camera | cards pop, papers slap or slide in, stamps slam, string draws through pins |
 
 The last three use the **kit** (`wbx/runtime/kit.js`): an episode says *what* appears and *when*
 (`K.card(...)`, `K.text(...)`, `K.arrow(...)`), and the theme decides the look and the entrance, so the same
 episode code renders in any of them. `style_options:` overrides a theme's colours or stroke settings.
 Themes live in `wbx/themes.py`. rough.js (MIT) is vendored in `wbx/runtime/vendor/`.
+
+`collage` adds its own blocks on top of the kit: load `/_wbx/collage.js` after `kit.js`, then
+`const C = wbx.collage(K)` gives `C.paper`, `C.stamp`, `C.string`, `C.highlight`, `C.loop`, `C.mover` and
+`C.camera` (keyframed pan and zoom over a board bigger than the screen; see the comment at the top of the file).
 
 ## Install
 
@@ -59,7 +64,17 @@ wbx info 01-caching                            # words, length, pace
 ## Configuration
 
 `series.yaml` sets the header, palette, fonts, canvas size, captions on/off, loudness, end-card padding,
-target pace, script rules and the output file name. See `wbx/templates/series.yaml` for every key and
+target pace, script rules and the output file name. A few keys worth knowing:
+
+- `captions: true` burns in word-by-word captions; `caption_top: 1230` moves them up (TikTok and
+  Shorts cover roughly the bottom 400 px and the right edge).
+- `fonts: {title: League Spartan, body: Poppins}` swaps a kit style's fonts for any Google Fonts
+  (titles, labels and captions use `title`; everything else uses `body`, or `data` if given).
+- `style_options: {round: 0}` gives square corners and square line ends (`1` = the style's own rounding).
+  In episode code, use `K.rx(n)` for your own rect corners so they follow this setting.
+
+Any of these can be set per episode in `episode.yaml`, which is how a series changes its look without
+re-rendering older episodes differently (pin the old value in their `episode.yaml`). See `wbx/templates/series.yaml` for every key and
 `examples/backend-concepts/series.yaml` for a real series. `WBX_CHROME` overrides the browser path.
 
 ## Tests
