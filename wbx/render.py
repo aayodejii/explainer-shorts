@@ -17,7 +17,7 @@ def caption_words(transcript: list, a: float, b: float) -> list:
                 if t == "%" and ws:
                     ws[-1]["w"] += "%"
                     continue
-                ws.append({"w": t, "s": round(w["s"], 3)})  # page timeline is absolute
+                ws.append({"w": t, "s": round(w["s"], 3), "e": round(w.get("e", w["s"]), 3)})  # page timeline is absolute
     return ws
 
 

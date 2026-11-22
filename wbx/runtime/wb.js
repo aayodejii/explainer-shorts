@@ -6,12 +6,14 @@ const back=x=>{const c=1.7;return 1+(c+1)*Math.pow(x-1,3)+c*Math.pow(x-1,2)};
 const arg=(el,k)=>el.dataset[k].split(',').map(Number);
 const els=k=>document.querySelectorAll('[data-'+k+']');
 window.WORDS=window.WORDS||[];
-// caption chunks: up to 4 words / ~20 chars, breaking after punctuation
+// caption chunks: up to 4 words / ~20 chars, breaking after punctuation and at pauses in the speech
+// (a gap of 0.18 s or more before the next word), so a chunk follows how the line is said
 function chunks(){const out=[];let cur=[],len=0;
-  for(const w of WORDS){
+  WORDS.forEach((w,i)=>{const nx=WORDS[i+1];
     if(cur.length&&len+w.w.length>20){out.push(cur);cur=[];len=0}
     cur.push(w);len+=w.w.length+1;
-    if(cur.length==4||/[.?!,]$/.test(w.w)){out.push(cur);cur=[];len=0}}
+    const pause=nx&&w.e!=null&&nx.s-w.e>=0.18;
+    if(cur.length==4||/[.?!,:;]$/.test(w.w)||pause){out.push(cur);cur=[];len=0}});
   if(cur.length)out.push(cur);return out;}
 let CH=null;
 window.render=function(t){
