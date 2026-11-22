@@ -5,7 +5,7 @@ Animated explainer shorts, timed word by word to a voiceover, in themeable style
 You write a script, record the voice, and choreograph SVG scenes on a timeline.
 `wbx` handles transcription, pacing, layout previews and rendering to a vertical MP4.
 
-Built for the *Backend Concepts* short-video series; configurable for any series.
+Built for the _Backend Concepts_ short-video series; configurable for any series.
 
 ## How it works
 
@@ -20,15 +20,15 @@ Built for the *Backend Concepts* short-video series; configurable for any series
 
 Set `style:` in `series.yaml` (or in an episode's own `episode.yaml` to override one episode):
 
-| style | look | how things enter |
-|---|---|---|
-| `whiteboard` (default) | original: Caveat + Patrick Hand, dotted paper, wobble | episode draws its own SVG |
-| `clean` | Nunito + JetBrains Mono, rounded cards, soft shadows, grid paper | cards pop, rows slide, text fades up |
-| `sketch` | rough.js strokes, hatch fills, Kalam + Gochi Hand, paper grain | outlines draw on, fills scribble in, text writes on |
-| `chalk` | dark board, chalk texture, Gaegu + Cabin Sketch | same as sketch |
-| `collage` | documentary paper collage: torn cut-outs, tape, stamps, red string, highlighter, handwritten notes, grain, moving camera | cards pop, papers slap or slide in, stamps slam, string draws through pins |
+| style                  | look                                                                                                                     | how things enter                                                           |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------- |
+| `whiteboard` (default) | original: Caveat + Patrick Hand, dotted paper, wobble                                                                    | episode draws its own SVG                                                  |
+| `clean`                | Nunito + JetBrains Mono, rounded cards, soft shadows, grid paper                                                         | cards pop, rows slide, text fades up                                       |
+| `sketch`               | rough.js strokes, hatch fills, Kalam + Gochi Hand, paper grain                                                           | outlines draw on, fills scribble in, text writes on                        |
+| `chalk`                | dark board, chalk texture, Gaegu + Cabin Sketch                                                                          | same as sketch                                                             |
+| `collage`              | documentary paper collage: torn cut-outs, tape, stamps, red string, highlighter, handwritten notes, grain, moving camera | cards pop, papers slap or slide in, stamps slam, string draws through pins |
 
-The last three use the **kit** (`wbx/runtime/kit.js`): an episode says *what* appears and *when*
+The last four use the **kit** (`wbx/runtime/kit.js`): an episode says _what_ appears and _when_
 (`K.card(...)`, `K.text(...)`, `K.arrow(...)`), and the theme decides the look and the entrance, so the same
 episode code renders in any of them. `style_options:` overrides a theme's colours or stroke settings.
 For motion beyond entrances, `K.fly(from, to, t0, t1)` sends a dot, `K.mover(keys, show, build)` moves any
