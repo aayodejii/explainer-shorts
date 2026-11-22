@@ -30,6 +30,8 @@ Set `style:` in `series.yaml` (or in an episode's own `episode.yaml` to override
 The last three use the **kit** (`wbx/runtime/kit.js`): an episode says *what* appears and *when*
 (`K.card(...)`, `K.text(...)`, `K.arrow(...)`), and the theme decides the look and the entrance, so the same
 episode code renders in any of them. `style_options:` overrides a theme's colours or stroke settings.
+For motion beyond entrances, `K.fly(from, to, t0, t1)` sends a dot, `K.mover(keys, show, build)` moves any
+group along keyframes, and `K.onFrame(fn)` runs code every frame (the kit owns `window.extra`).
 Themes live in `wbx/themes.py`. rough.js (MIT) is vendored in `wbx/runtime/vendor/`.
 
 `collage` adds its own blocks on top of the kit: load `/_wbx/collage.js` after `kit.js`, then
@@ -76,6 +78,11 @@ target pace, script rules and the output file name. A few keys worth knowing:
 Any of these can be set per episode in `episode.yaml`, which is how a series changes its look without
 re-rendering older episodes differently (pin the old value in their `episode.yaml`). See `wbx/templates/series.yaml` for every key and
 `examples/backend-concepts/series.yaml` for a real series. `WBX_CHROME` overrides the browser path.
+
+## Fonts
+
+Google Fonts are fetched once and cached in `~/.cache/wbx/fonts` (`WBX_FONT_CACHE` to change it), so renders
+are repeatable and work offline after the first run. A font that fails to load is reported as a warning.
 
 ## Tests
 

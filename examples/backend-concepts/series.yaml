@@ -1,9 +1,14 @@
 # The series wbx was built for: one backend engineering concept per ~45 s vertical video.
 name: Backend Concepts
-header: BACKEND CONCEPTS
+header: ""            # no series title on the hook from episode 15 on (older episodes have it in their own HTML)
+
+style: clean          # new episodes; 01-05 pin `whiteboard` in their episode.yaml
 
 canvas: {width: 1080, height: 1920, fps: 30}
-captions: false
+captions: true         # on from episode 15; 01–14 pin false in episode.yaml
+caption_top: 1230      # above TikTok's description + buttons
+fonts: {title: League Spartan, body: Poppins}   # from episode 15
+style_options: {round: 0}   # square corners from episode 15
 
 audio: {loudness: -14, end_pad: 1.5}
 
@@ -12,13 +17,14 @@ voice:
   notes: 'ElevenLabs "WikiBrad - Fast & Informative", speed 0.88'
 
 script:
-  target_words: 150
+  target_words: 100      # ~25–30 s; was 150 up to episode 14
   closing_line: "Save this, and share it with someone who's learning backend."
   rules:
     - No acronyms or acronym plurals (the voice reads "APIs" as "AP"); spell out or rephrase.
     - No rhetorical question-then-answer lines ("Short bursts? That's fine."); write plain statements.
     - The line before the closing line carries a concrete fact, not a slogan.
     - Numbers are written out in words.
+    - "The first sentence is the hook: a consequence or surprise, said in the first two seconds."
 
 end_card:
   line1: Save this
