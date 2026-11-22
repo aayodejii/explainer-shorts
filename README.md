@@ -1,6 +1,7 @@
-# whiteboard-explainer (`wbx`)
+# explainer-shorts (`wbx`)
 
-Hand-drawn whiteboard explainer videos, timed word by word to a voiceover.
+Animated explainer shorts, timed word by word to a voiceover, in themeable styles
+(clean, collage, sketch, chalk, or the original hand-drawn whiteboard).
 You write a script, record the voice, and choreograph SVG scenes on a timeline.
 `wbx` handles transcription, pacing, layout previews and rendering to a vertical MP4.
 

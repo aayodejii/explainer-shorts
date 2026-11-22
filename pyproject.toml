@@ -3,9 +3,9 @@ requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "whiteboard-explainer"
+name = "explainer-shorts"
 dynamic = ["version"]
-description = "Hand-drawn whiteboard explainer videos, timed word-by-word to a voiceover."
+description = "Turn a voiceover into an animated explainer short: word-timed SVG scenes, themeable styles, captions, vertical MP4."
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = ["faster-whisper>=1.0", "playwright>=1.40", "numpy", "pyyaml"]
