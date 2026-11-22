@@ -9,7 +9,7 @@
 //   C.loop(cx, cy, rx, ry, t, {parent})        hand-drawn loop around something
 //   C.mover(keys, show, build)                 keyframed group: keys [[t,x,y,rot?],...], show [t0,t1], build(g)
 //   C.camera(keys, {until})                    keys [[t, cx, cy, zoom],...]; identity after `until` (end card)
-// window.extra is set by collage; episode code can add its own per-frame work with C.onFrame(fn).
+// Per-frame work goes through the kit (K.onFrame); C.mover/C.onFrame are the kit's K.mover/K.onFrame.
 (function () {
   const NS = 'http://www.w3.org/2000/svg';
   window.wbx = window.wbx || {};
@@ -63,32 +63,14 @@
       return el('path', {d, fill: 'none', stroke: th.red, 'stroke-width': 7, 'stroke-linecap': 'round', 'data-draw': `${f2(t)},${o.dur || 0.6}`}, o.parent || cur());
     };
 
-    const io = u => u < .5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2;
-    const interp = (keys, t) => {   // keys [[t, a, b, c, ...]] → eased values at t
-      let k = keys.length - 1; for (let i = 1; i < keys.length; i++) if (t < keys[i][0]) { k = i; break; }
-      const A = keys[Math.max(0, k - 1)], B = keys[k], u = t >= B[0] ? 1 : io(Math.max(0, (t - A[0]) / Math.max(1e-6, B[0] - A[0])));
-      return A.slice(1).map((v, j) => v + ((B[j + 1] ?? v) - v) * u);
-    };
-    const MV = [], FN = [];
-    C.mover = (keys, show, build) => { const g = el('g', {opacity: 0}, o2()); build(g); MV.push({keys, show, g}); return g; };
-    let moverLayer = null; const o2 = () => moverLayer || (moverLayer = el('g', {}, root));
     let CAM = null, camUntil = 1e9;
     C.camera = (keys, o = {}) => { CAM = keys; camUntil = o.until ?? 1e9; };
-    C.onFrame = fn => FN.push(fn);
-    C.interp = interp;
-
-    let lifted = false;
-    window.extra = function (t) {
-      if (!lifted && moverLayer) { root.appendChild(moverLayer); lifted = true; }   // movers above everything built later
-      if (CAM && t < camUntil) { const [cx, cy, z] = interp(CAM, t);
+    C.mover = K.mover; C.onFrame = K.onFrame; C.interp = K.interp;
+    K.onFrame(t => {
+      if (CAM && t < camUntil) { const [cx, cy, z] = K.interp(CAM, t);
         cam.setAttribute('transform', `translate(540 960) scale(${z}) translate(${-cx} ${-cy})`); }
       else cam.removeAttribute('transform');
-      MV.forEach(m => { if (t < m.show[0] || t > m.show[1]) { m.g.setAttribute('opacity', 0); return; }
-        const [x, y, r = 0] = interp(m.keys, t);
-        m.g.setAttribute('transform', `translate(${x} ${y}) rotate(${r})`);
-        m.g.setAttribute('opacity', Math.min(1, (t - m.show[0]) / 0.15)); });
-      FN.forEach(fn => fn(t));
-    };
+    });
     return C;
   };
 })();
