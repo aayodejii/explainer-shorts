@@ -10,6 +10,10 @@
 //   K.card(80, 600, 400, 300, 1.0, {tone:'blue', bar:true});
 //
 // Never put data-pop and data-move on the same element (both set a transform).
+//
+// Motion over time (not just entrances): K.mover(keys, show, build) moves a group along keyframes,
+// K.fly(from, to, t0, t1) sends a dot, K.onFrame(fn) runs fn(t) every frame. The kit owns window.extra,
+// so episode code should use K.onFrame instead of assigning window.extra itself.
 (function(){
 const NS='http://www.w3.org/2000/svg';
 const r2=n=>Math.round(n*100)/100;
@@ -134,12 +138,34 @@ function kit(opts={}){
     counter(x,y,size,from,to,t,dur,o={}){
       const e=el('text',{x,y,'font-size':size,'text-anchor':o.anchor,class:o.cls,style:o.color?`fill:${color(o.color)}`:null,
         'data-fade':`${r2(t)},0.2`,'data-count':`${r2(t)},${dur},${from},${to}`});return e},
+    /** Run fn(t) on every frame (camera moves, pulses, anything not covered by data attributes). */
+    onFrame(fn){FN.push(fn);return fn},
+    /** Eased interpolation over keyframes [[t, a, b, ...], ...] → [a, b, ...] at time t. */
+    interp,
+    /** A group that follows keyframes [[t, x, y, rot?], ...] while t is inside show=[t0, t1]; build(g) draws it around (0,0). */
+    mover(keys,show,build){const g=el('g',{opacity:0},layer());build(g);MV.push({keys,show,g});return g},
+    /** A dot travelling from → to between t0 and t1 (gone after t1 unless o.hold = time to keep it until). */
+    fly(from,to,t0,t1,o={}){return K.mover([[t0,from[0],from[1]],[t1,to[0],to[1]]],[t0,o.hold??t1],
+      g=>el('circle',{r:o.r||16,style:`fill:${color(o.tone||'orange')}`},g))},
     /** "Save this & share it" end card from t until the end. */
     endCard(t,lines){K.scene(t);
       K.icon('bookmark',260,750,t+0.05);K.text(360,795,120,lines[0],t+0.1,{cls:'title',dur:0.5});
       K.icon('plane',265,960,t+0.65);K.text(360,1005,120,lines[1],t+0.7,{cls:'title',dur:0.5});
       if(lines[2])K.text(540,1160,th.endSmall||62,lines[2],t+1.1,{anchor:'middle',color:'muted',dur:1.0});},
   };
+  // per-frame machinery for movers / onFrame
+  const io=u=>u<.5?4*u*u*u:1-Math.pow(-2*u+2,3)/2;
+  function interp(keys,t){let k=keys.length-1;for(let i=1;i<keys.length;i++)if(t<keys[i][0]){k=i;break}
+    const A=keys[Math.max(0,k-1)],B=keys[k],u=t>=B[0]?1:io(Math.max(0,(t-A[0])/Math.max(1e-6,B[0]-A[0])));
+    return A.slice(1).map((v,j)=>v+((B[j+1]??v)-v)*u)}
+  const MV=[],FN=[];let LAYER=null,lifted=false;
+  const layer=()=>LAYER||(LAYER=el('g',{},top));
+  window.extra=function(t){
+    if(LAYER&&!lifted){top.appendChild(LAYER);lifted=true}   // movers draw above everything built after them
+    for(const m of MV){if(t<m.show[0]||t>m.show[1]){m.g.setAttribute('opacity',0);continue}
+      const[x,y,r=0]=interp(m.keys,t);m.g.setAttribute('transform',`translate(${x} ${y}) rotate(${r})`);
+      m.g.setAttribute('opacity',Math.min(1,(t-m.show[0])/0.15))}
+    for(const fn of FN)fn(t)};
   return K;
 }
 window.wbx={kit,ICONS};
