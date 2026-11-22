@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import contextlib
 import functools
+import hashlib
 import http.server
 import json
 import os
@@ -79,6 +80,29 @@ def chrome_path(cfg: dict) -> str | None:
     return None
 
 
+FONT_CACHE = Path(os.environ.get("WBX_FONT_CACHE", Path.home() / ".cache" / "wbx" / "fonts"))
+
+
+def _cached_font(route):
+    """Serve Google Fonts CSS and font files from a disk cache (fetched once, then offline and identical every run).
+    Fetching them on every render occasionally left a weight unloaded, so text shifted between renders."""
+    url = route.request.url
+    f = FONT_CACHE / hashlib.sha256(url.encode()).hexdigest()
+    meta = f.with_suffix(".type")
+    if not f.exists():
+        try:
+            r = route.fetch()
+        except Exception:
+            return route.continue_()
+        if r.status != 200:
+            return route.fulfill(response=r)
+        FONT_CACHE.mkdir(parents=True, exist_ok=True)
+        f.write_bytes(r.body())
+        meta.write_text(r.headers.get("content-type", "application/octet-stream"))
+    route.fulfill(status=200, body=f.read_bytes(), content_type=meta.read_text(),
+                  headers={"access-control-allow-origin": "*"})
+
+
 @contextlib.contextmanager
 def open_page(html: Path, root: Path, cfg: dict, words: list | None = None):
     """Yield a Playwright page with the episode loaded and fonts ready."""
@@ -91,10 +115,14 @@ def open_page(html: Path, root: Path, cfg: dict, words: list | None = None):
         pg.set_default_timeout(120000)
         pg.on("pageerror", lambda e: print(f"page error: {e}", file=sys.stderr))
         pg.add_init_script(f"window.WORDS={json.dumps(words or [])}")
+        pg.route(lambda u: "fonts.googleapis.com" in u or "fonts.gstatic.com" in u, _cached_font)
         rel = html.resolve().relative_to(root.resolve()).as_posix()
         pg.goto(f"{base}/{rel}")
         pg.wait_for_load_state("networkidle")
         pg.evaluate("document.fonts.ready")
+        bad = pg.evaluate("[...document.fonts].filter(f => f.status == 'error').map(f => f.family + ' ' + f.weight)")
+        if bad:
+            print(f"warning: fonts failed to load: {', '.join(sorted(set(bad)))}", file=sys.stderr)
         try:
             yield pg
         finally:
