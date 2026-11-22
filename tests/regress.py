@@ -18,7 +18,7 @@ from pathlib import Path
 from wbx import cli
 from wbx.render import stills
 
-TIMES = [1, 8, 16, 24, 32, 41.5]
+TIMES = [0, 1, 4, 8, 16, 24, 32, 41.5]   # 0 and 4 cover the hook frame of the newer, shorter format
 THRESHOLD, MAX_PIXELS = 40, 200
 
 

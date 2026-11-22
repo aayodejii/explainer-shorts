@@ -56,8 +56,10 @@ def stills(html: Path, root: Path, cfg: dict, times: list[float], outdir: Path) 
     outdir.mkdir(parents=True, exist_ok=True)
     paths = []
     with open_page(html, root, cfg) as pg:
+        warm_up(pg, max(times) + 1)   # load every font/glyph subset first, as video() does, or text can shift between runs
         for t in times:
             pg.evaluate(f"render({t})")
+            pg.evaluate("document.fonts.ready")
             pg.wait_for_timeout(50)
             p = outdir / f"{t:05.1f}.png"
             pg.screenshot(path=str(p))
