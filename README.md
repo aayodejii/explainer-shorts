@@ -1,47 +1,47 @@
 # explainer-shorts (`wbx`)
 
-Animated explainer shorts, timed word by word to a voiceover, in themeable styles
-(clean, collage, sketch, chalk, or the original hand-drawn whiteboard).
-You write a script, record the voice, and choreograph SVG scenes on a timeline.
-`wbx` handles transcription, pacing, layout previews and rendering to a vertical MP4.
+`wbx` makes animated explainer shorts, timed word by word to a voiceover, in themeable styles: clean, collage, sketch, chalk, or the original hand-drawn whiteboard.
+You write the script, record the voiceover (your own voice or a generated one), and lay out SVG scenes on a timeline.
+`wbx` does the rest: transcription, pacing, layout previews and the final render to a vertical MP4.
 
-Built for the _Backend Concepts_ short-video series; configurable for any series.
+I built it for the _Backend Concepts_ short-video series, but you can configure it for any series.
 
 ## How it works
 
-- Each episode is one HTML page holding an SVG canvas. Every element is a pure function of time `t`,
-  set with data attributes (`data-draw`, `data-write`, `data-fade`, `data-wipe`, `data-pop`, `data-out`)
-  plus an optional `window.extra(t)` for custom motion. The runtime (`wbx/runtime/wb.js`) applies them.
-- A "boiling" turbulence filter gives the hand-drawn wobble; fonts are Caveat and Patrick Hand (Google Fonts, OFL).
-- `faster-whisper` gives word timings, so scenes land on the exact spoken word.
-- Headless Chrome (Playwright) screenshots every frame; ffmpeg encodes H.264 + AAC, loudness-normalised.
+- An episode is a single HTML page with an SVG canvas inside. Every element is a pure function of time `t`.
+  You control it with data attributes (`data-draw`, `data-write`, `data-fade`, `data-wipe`, `data-pop`, `data-out`),
+  and you can add a `window.extra(t)` if you need custom motion. That's for the whiteboard style. The kit styles use `K.onFrame` instead.
+  The runtime (`wbx/runtime/wb.js`) applies all of it.
+- The hand-drawn wobble comes from a "boiling" turbulence filter. The fonts are Caveat and Patrick Hand (Google Fonts, OFL).
+- `faster-whisper` provides the word timings, so a scene lands on the exact word you say.
+- Playwright drives headless Chrome to screenshot every frame. Then ffmpeg encodes H.264 + AAC and normalises loudness.
 
 ## Styles
 
-Set `style:` in `series.yaml` (or in an episode's own `episode.yaml` to override one episode):
+Pick a style with `style:` in `series.yaml`. To change it for one episode only, put `style:` in that episode's `episode.yaml`:
 
-| style                  | look                                                                                                                     | how things enter                                                           |
-| ---------------------- | ------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------- |
-| `whiteboard` (default) | original: Caveat + Patrick Hand, dotted paper, wobble                                                                    | episode draws its own SVG                                                  |
-| `clean`                | Nunito + JetBrains Mono, rounded cards, soft shadows, grid paper                                                         | cards pop, rows slide, text fades up                                       |
-| `sketch`               | rough.js strokes, hatch fills, Kalam + Gochi Hand, paper grain                                                           | outlines draw on, fills scribble in, text writes on                        |
-| `chalk`                | dark board, chalk texture, Gaegu + Cabin Sketch                                                                          | same as sketch                                                             |
-| `collage`              | documentary paper collage: torn cut-outs, tape, stamps, red string, highlighter, handwritten notes, grain, moving camera | cards pop, papers slap or slide in, stamps slam, string draws through pins |
+| style                  | look                                                                                                                                    | how things enter                                                               |
+| ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| `whiteboard` (default) | the original: Caveat + Patrick Hand, dotted paper, wobble                                                                               | the episode draws its own SVG                                                  |
+| `clean`                | Nunito + JetBrains Mono, rounded cards, soft shadows, grid paper                                                                        | cards pop, rows slide, text fades up                                           |
+| `sketch`               | rough.js strokes, hatch fills, Kalam + Gochi Hand, paper grain                                                                          | outlines draw on, fills get scribbled in, text writes itself                   |
+| `chalk`                | dark board, chalk texture, Gaegu + Cabin Sketch                                                                                         | same as `sketch`                                                               |
+| `collage`              | documentary-style paper collage with torn cut-outs, tape, stamps, red string, highlighter, handwritten notes, grain and a moving camera | cards pop, papers slap or slide in, stamps slam down, string runs through pins |
 
-The last four use the **kit** (`wbx/runtime/kit.js`): an episode says _what_ appears and _when_
-(`K.card(...)`, `K.text(...)`, `K.arrow(...)`), and the theme decides the look and the entrance, so the same
-episode code renders in any of them. `style_options:` overrides a theme's colours or stroke settings.
-For motion beyond entrances, `K.fly(from, to, t0, t1)` sends a dot, `K.mover(keys, show, build)` moves any
-group along keyframes, and `K.onFrame(fn)` runs code every frame (the kit owns `window.extra`).
-Themes live in `wbx/themes.py`. rough.js (MIT) is vendored in `wbx/runtime/vendor/`.
+The last four use the kit (`wbx/runtime/kit.js`). An episode only describes what appears and when
+(`K.card(...)`, `K.text(...)`, `K.arrow(...)`). The theme picks the look and the entrance, which means the same
+episode code renders in any of the four. Use `style_options:` to override a theme's colours or stroke settings.
+If you want motion past the entrance, `K.fly(from, to, t0, t1)` sends a dot across, `K.mover(keys, show, build)` moves any
+group along keyframes, and `K.onFrame(fn)` runs your code on every frame. The kit owns `window.extra`, so use `K.onFrame` instead.
+The themes are in `wbx/themes.py`. rough.js (MIT) is vendored in `wbx/runtime/vendor/`.
 
-`collage` adds its own blocks on top of the kit: load `/_wbx/collage.js` after `kit.js`, then
-`const C = wbx.collage(K)` gives `C.paper`, `C.stamp`, `C.string`, `C.highlight`, `C.loop`, `C.mover` and
-`C.camera` (keyframed pan and zoom over a board bigger than the screen; see the comment at the top of the file).
+`collage` has extra building blocks on top of the kit. Load `/_wbx/collage.js` after `kit.js`, then call
+`const C = wbx.collage(K)` to get `C.paper`, `C.stamp`, `C.string`, `C.highlight`, `C.loop`, `C.mover` and
+`C.camera`. That last one does keyframed pan and zoom over a board larger than the screen. The comment at the top of the file explains how.
 
 ## Install
 
-Needs Python 3.10+, ffmpeg, and Chrome or Chromium.
+You need Python 3.10+, ffmpeg, and Chrome or Chromium.
 
 ```sh
 python3 -m venv .venv && .venv/bin/pip install -e .
@@ -66,24 +66,24 @@ wbx info 01-caching                            # words, length, pace
 
 ## Configuration
 
-`series.yaml` sets the header, palette, fonts, canvas size, captions on/off, loudness, end-card padding,
-target pace, script rules and the output file name. A few keys worth knowing:
+`series.yaml` controls the header, palette, fonts, canvas size, whether captions are on, loudness, end-card padding,
+target pace, script rules and the output file name. These are the ones you'll most likely touch:
 
-- `captions: true` burns in word-by-word captions; `caption_top: 1230` moves them up (TikTok and
-  Shorts cover roughly the bottom 400 px and the right edge).
-- `fonts: {title: League Spartan, body: Poppins}` swaps a kit style's fonts for any Google Fonts
-  (titles, labels and captions use `title`; everything else uses `body`, or `data` if given).
-- `style_options: {round: 0}` gives square corners and square line ends (`1` = the style's own rounding).
-  In episode code, use `K.rx(n)` for your own rect corners so they follow this setting.
+- `captions: true` burns word-by-word captions into the video. `caption_top: 1230` pushes them higher, which matters because TikTok and
+  Shorts cover roughly the bottom 400 px and the right edge.
+- `fonts: {title: League Spartan, body: Poppins}` replaces a kit style's fonts with any Google Fonts.
+  Titles, labels and captions use `title`. Everything else uses `body`, or `data` if you set it.
+- `style_options: {round: 0}` makes corners and line ends square. `1` brings back the style's own rounding.
+  For rect corners you draw yourself in episode code, use `K.rx(n)` so they respect this setting too.
 
-Any of these can be set per episode in `episode.yaml`, which is how a series changes its look without
-re-rendering older episodes differently (pin the old value in their `episode.yaml`). See `wbx/templates/series.yaml` for every key and
-`examples/backend-concepts/series.yaml` for a real series. `WBX_CHROME` overrides the browser path.
+You can set any of these per episode in `episode.yaml`. That's how a series changes its look without
+older episodes coming out different on a re-render: pin the old value in their `episode.yaml`. Every key is listed in `wbx/templates/series.yaml`,
+and `examples/backend-concepts/series.yaml` is a real series you can copy from. Set `WBX_CHROME` to point at a different browser.
 
 ## Fonts
 
-Google Fonts are fetched once and cached in `~/.cache/wbx/fonts` (`WBX_FONT_CACHE` to change it), so renders
-are repeatable and work offline after the first run. A font that fails to load is reported as a warning.
+`wbx` downloads Google Fonts once and caches them in `~/.cache/wbx/fonts`. Set `WBX_FONT_CACHE` to move that folder. Because of the cache, renders
+are repeatable and work offline after the first run. If a font fails to load, you get a warning.
 
 ## Tests
 
@@ -92,6 +92,6 @@ are repeatable and work offline after the first run. A font that fails to load i
 .venv/bin/python tests/regress.py <series> --baseline <dir> [--update]   # pixel regression over real episodes
 ```
 
-## Content stays out
+## Keep content out of this repo
 
-Audio, video and episode folders belong in your own content folder, not this repo (`.gitignore` blocks media).
+Put audio, video and episode folders in your own content folder. `.gitignore` blocks media here anyway.
