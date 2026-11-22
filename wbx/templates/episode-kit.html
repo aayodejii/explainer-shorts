@@ -1,32 +1,42 @@
 <!doctype html>
 <html><head><meta charset="utf-8"><title>{{TITLE}}</title>
-<link rel="stylesheet" href="/_wbx/wb.css"><script src="/_wbx/kit.js"></script></head><body>
+<link rel="stylesheet" href="/_wbx/wb.css"><script src="/_wbx/kit.js"></script>{{COLLAGE_SCRIPT}}</head><body>
 <!--
   Kit episode: describe WHAT appears and WHEN; the series style (series.yaml `style:`) decides the look.
-  Blocks (t = start time in seconds, from transcript.txt):
+  Times (t, seconds) come from transcript.txt. Layout: keep content between y≈150 and y≈{{CONTENT_BOTTOM}}
+  ({{CONTENT_NOTE}}), and clear of the right edge below y≈900 (platform buttons).
+
+  Hook: the first frame is the cover people scroll past, so the hook is already on screen at t=0
+  (use t=-1 for anything that should be fully in at frame 0). Change something every 3-4 s after that.
+
+  Blocks:
     K.scene(start, end)                 following elements fade out at `end`
     K.text(x, y, size, 'txt', t, {anchor:'middle', cls:'title'|'label'|'data'|'body', color:'blue'})
     K.card(x, y, w, h, t, {tone:'blue', bar:true})      K.row(x, y, w, h, t, {zebra:true})
     K.mark(x, y, w, h, t, {tone:'green'})                K.highlight(x, y, w, h, t, {before: textEl})
     K.arrow([[x,y],...], t)    K.line(x1,y1,x2,y2,t)    K.strike(...)    K.underline(x1, x2, y, color, t)
-    K.icon('bookmark'|'plane'|'check'|'cross'|'phone', x, y, t, {size:100, tone:'blue'})    K.magnifier(x, y, t)
+    K.icon('bookmark'|'plane'|'check'|'cross'|'phone'|'eye', x, y, t, {size:100, tone:'blue'})    K.magnifier(x, y, t)
     K.database(cx, y, w, h, t, {label:'users'})          K.chip(cx, cy, 'text', t, {tone:'green', cls:'data'})
     K.counter(x, y, size, from, to, t, dur, {anchor:'middle', cls:'title'})
-  Custom motion: window.extra = t => {...}.   Preview: wbx stills <folder> 1 5 10   Render: wbx render <folder>
+  Motion:
+    K.fly([x0,y0], [x1,y1], t0, t1, {tone:'orange', r:16})        a dot travelling between two points
+    K.mover([[t,x,y,rot],...], [show0, show1], g => {...draw around 0,0...})
+    K.onFrame(t => {...})               per-frame code (don't assign window.extra; the kit owns it)
+    K.rx(28)                            corner radius for your own rects (follows style_options.round){{COLLAGE_HELP}}
+  Preview: wbx stills <folder> 0 4 10   Render: wbx render <folder>
 -->
 <svg id="s" viewBox="0 0 {{W}} {{H}}" width="{{W}}" height="{{H}}"><g id="root"></g></svg>
 <div id="cap"></div>
 <script>
-const K = wbx.kit();
-K.header('{{HEADER}}', {{HOOK_OUT}});
-
-// ===== A. HOOK (0 – {{HOOK_OUT}}) =====
+const K = wbx.kit(), th = K.theme;{{COLLAGE_INIT}}
+{{HEADER_LINE}}
+// ===== A. HOOK (0 – {{HOOK_OUT}}) — on screen at frame 0 =====
 K.scene(0, {{HOOK_OUT}});
-K.text(540, 840, 110, '{{TITLE_JS}}', 0.3, {anchor: 'middle', cls: 'title'});
+K.text(540, 300, 100, '{{TITLE_JS}}', -1, {anchor: 'middle', cls: 'title'});   // replace with the hook line
 
 // ===== B… scenes go here =====
 
-// ===== END CARD ({{END}} – end) =====
+// ===== END CARD ({{END}} – end) ====={{CAMERA_HINT}}
 K.endCard({{END}}, ['{{END_LINE1_JS}}', '{{END_LINE2_JS}}', '{{END_LINE3_JS}}']);
 </script>
 <script src="/_wbx/wb.js"></script>

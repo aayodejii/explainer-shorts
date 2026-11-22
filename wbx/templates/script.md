@@ -2,12 +2,15 @@
 
 Target length: ~{{TARGET_WORDS}} words (≈{{TARGET_SECONDS}} s at {{TARGET_WPM}} words per minute)
 Voice: {{VOICE_NOTES}}
+{{RULES}}
 
 ---
 
 ## Script (paste this into the voice tool)
 
-(write the script here)
+(first sentence = the hook: a consequence or surprise, said within the first two seconds)
+
+(the rest of the script)
 
 {{CLOSING_LINE}}
 
@@ -15,6 +18,6 @@ Voice: {{VOICE_NOTES}}
 
 ## Visual plan (what gets drawn as each line plays)
 
-| Line | Whiteboard scene |
+| Line | Scene |
 |---|---|
 | | |

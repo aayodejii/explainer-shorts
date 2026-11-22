@@ -117,7 +117,8 @@ def cmd_new(a):
         "SERIES": cfg["name"], "NUM": f"{num:02d}", "TITLE": a.title or title_of(slug),
         "TARGET_WORDS": sc["target_words"], "TARGET_WPM": cfg["voice"]["target_wpm"],
         "TARGET_SECONDS": round(sc["target_words"] / cfg["voice"]["target_wpm"] * 60),
-        "VOICE_NOTES": cfg["voice"].get("notes") or "-", "CLOSING_LINE": sc.get("closing_line") or "",
+        "VOICE_NOTES": cfg["voice"].get("notes") or "-",
+        "RULES": ("Rules:\n" + "\n".join(f"- {r}" for r in sc.get("rules") or [])) if sc.get("rules") else "", "CLOSING_LINE": sc.get("closing_line") or "",
     }))
     print(f"created {d}\n  next: write {d / 'script.md'}, record the voice, drop the audio file in the folder, "
           f"then `wbx transcribe {d.name}`")
@@ -132,12 +133,25 @@ def scaffold_html(ep: Episode, tr: list) -> Path:
     hook = next((round(w["e"] + 0.3, 1) for w in ws if w["w"].strip()[-1:] in ".?!"), 5.0)
     js = lambda v: str(v).replace("\\", "\\\\").replace("'", "\\'")
     kit = config.style_theme(cfg) is not None
+    collage = cfg["style"] == "collage"
+    cap_top = cfg.get("caption_top", 1470)
     html = fill((TEMPLATES / ("episode-kit.html" if kit else "episode.html")).read_text(), {
         "TITLE_JS": js(ep.title()), "END_LINE1_JS": js(ec["line1"]), "END_LINE2_JS": js(ec["line2"]),
         "END_LINE3_JS": js(ec["line3"]),
         "TITLE": ep.title(), "HEADER": cfg["header"], "W": cv["width"], "H": cv["height"],
         "HOOK_OUT": hook, "END": T, "END_A": round(T + 0.05, 2), "END_B": round(T + 0.1, 2),
         "END_C": round(T + 0.65, 2), "END_D": round(T + 0.7, 2), "END_E": round(T + 1.1, 2),
+        "COLLAGE_SCRIPT": '<script src="/_wbx/collage.js"></script>' if collage else "",
+        "COLLAGE_INIT": "\nconst C = wbx.collage(K);" if collage else "",
+        "COLLAGE_HELP": ("\n  Collage (C = wbx.collage(K)): C.paper, C.text, C.highlight, C.stamp, C.string, C.loop, C.mover,"
+                         "\n    C.camera([[t, cx, cy, zoom], ...], {until: endCardTime}) pans/zooms over a board bigger than the screen."
+                         if collage else ""),
+        "CAMERA_HINT": (f"\nC.camera([[0, 540, 960, 1], [{T}, 540, 960, 1]], {{until: {T}}});   // pan/zoom keyframes"
+                        if collage else ""),
+        "HEADER_LINE": f"K.header('{js(cfg['header'])}', {hook});\n" if cfg["header"] else "",
+        "CONTENT_BOTTOM": cap_top - 30 if cfg["captions"] else cv["height"] - 420,
+        "CONTENT_NOTE": f"captions start at y={cap_top}" if cfg["captions"]
+                        else "platform UI covers roughly the bottom 400 px",
         "END_LINE1": ec["line1"], "END_LINE2": ec["line2"].replace("&", "&amp;"), "END_LINE3": ec["line3"],
     })
     p = ep.dir / f"ep{ep.num:02d}.html"

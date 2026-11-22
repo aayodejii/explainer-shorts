@@ -1,9 +1,14 @@
 # Series settings for wbx. Anything left out uses the defaults in wbx/config.py.
 name: {{NAME}}
-header: {{HEADER}}          # small title on the hook scene only; "" for none
+header: ""                  # small series title on the hook scene; "" keeps frame 0 for the hook itself
 
 canvas: {width: 1080, height: 1920, fps: 30}
-captions: false
+captions: true              # most short-video viewers watch muted
+caption_top: 1230           # TikTok/Shorts cover roughly the bottom 400 px; keep content above this
+
+style: clean                # clean | collage | sketch | chalk | whiteboard
+# fonts: {title: League Spartan, body: Poppins}   # optional: any Google Fonts for kit styles
+# style_options: {round: 0}                       # optional: square corners
 
 theme:
   paper: "#FBFAF5"
@@ -22,8 +27,9 @@ voice:
   notes: ""                 # e.g. which voice/settings you record with
 
 script:
-  target_words: 150
+  target_words: 100         # ~25-30 s; short videos keep viewers to the end
   closing_line: ""          # spoken last line, e.g. a call to action
-  rules: []                 # extra writing rules for this series
+  rules:                    # listed in each new script.md
+    - The first sentence is the hook, a consequence or surprise said in the first two seconds.
 
 end_card: {line1: "Save this", line2: "& share it", line3: ""}
