@@ -6,15 +6,16 @@ const back=x=>{const c=1.7;return 1+(c+1)*Math.pow(x-1,3)+c*Math.pow(x-1,2)};
 const arg=(el,k)=>el.dataset[k].split(',').map(Number);
 const els=k=>document.querySelectorAll('[data-'+k+']');
 window.WORDS=window.WORDS||[];
-// caption chunks: up to 4 words / ~20 chars, breaking after punctuation and at pauses in the speech
-// (a gap of 0.18 s or more before the next word), so a chunk follows how the line is said
-function chunks(){const out=[];let cur=[],len=0;
-  WORDS.forEach((w,i)=>{const nx=WORDS[i+1];
-    if(cur.length&&len+w.w.length>20){out.push(cur);cur=[];len=0}
-    cur.push(w);len+=w.w.length+1;
-    const pause=nx&&w.e!=null&&nx.s-w.e>=0.18;
-    if(cur.length==4||/[.?!,:;]$/.test(w.w)||pause){out.push(cur);cur=[];len=0}});
-  if(cur.length)out.push(cur);return out;}
+// caption chunks: split the words into clauses (ending at punctuation or a pause of 0.18 s or more),
+// then cut each clause into equal pieces of at most 4 words / ~20 characters, so a 9-word clause becomes
+// 3+3+3 instead of 4+4+1 and chunks don't end mid-phrase as often
+function chunks(){const out=[],clauses=[];let cur=[];
+  WORDS.forEach((w,i)=>{const nx=WORDS[i+1];cur.push(w);
+    if(!nx||/[.?!,:;]$/.test(w.w)||(w.e!=null&&nx.s-w.e>=0.18)){clauses.push(cur);cur=[]}});
+  for(const c of clauses){const chars=c.reduce((n,w)=>n+w.w.length+1,0);
+    const k=Math.max(Math.ceil(c.length/4),Math.ceil(chars/22)),size=c.length/k;
+    for(let j=0;j<k;j++)out.push(c.slice(Math.round(j*size),Math.round((j+1)*size)));}
+  return out.filter(c=>c.length);}
 let CH=null;
 window.render=function(t){
   for(const el of els('draw')){
